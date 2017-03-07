@@ -9,9 +9,8 @@
 import Cocoa
 import Decodable
 
-let vendor = "MacVoikko"
+let vendor = "MacDivvun"
 let spellerFolder = URL(fileURLWithPath: "\(NSHomeDirectory())/Library/Speller/\(vendor)", isDirectory: true)
-let jsonUrl = URL(string: "https://www.dropbox.com/s/min9015tba4o167/bundles.json?dl=1")
 
 struct LanguageBundle: Decodable, Equatable, Hashable {
     let name: [String: String]?
@@ -38,7 +37,7 @@ struct LanguageBundle: Decodable, Equatable, Hashable {
 class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
     @IBOutlet var tableView: NSTableView!
     
-    var availableBundles: [LanguageBundle] = []
+    var availableBundles: [LanguageBundle]?
     
     var installedBundles: [LanguageBundle] {
         let contents = (try? FileManager.default.contentsOfDirectory(atPath: spellerFolder.path)) ?? []
@@ -59,6 +58,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         super.viewDidLoad()
         DispatchQueue.global().async {
             do {
+                let jsonUrl = (Bundle.main.infoDictionary?["JSONFileURL"] as? String).flatMap(URL.init)
                 self.availableBundles = try jsonUrl.flatMap { url -> Any? in
                     try JSONSerialization.jsonObject(with: Data(contentsOf: url), options: [])
                 }.flatMap {
@@ -78,10 +78,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     }
     
     func numberOfRows(in tableView: NSTableView) -> Int {
-        if availableBundles.count != 0 {
-            return availableBundles.count
-        }
-        return 1
+        return availableBundles?.count ?? 1
     }
     
     func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
@@ -99,7 +96,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     }
     
     func leftColumnView(forRow row: Int) -> NSView? {
-        guard !availableBundles.isEmpty else {
+        guard let availableBundles = availableBundles else {
             let label = NSTextField(labelWithString: "Loading...")
             label.font = NSFont.systemFont(ofSize: 24)
             return label
@@ -113,7 +110,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     }
     
     func rightColumnView(forRow row: Int) -> NSView? {
-        guard !availableBundles.isEmpty else {
+        guard let availableBundles = availableBundles else {
             return nil
         }
         
@@ -142,8 +139,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     }
     
     func installBundle(sender: AnyObject) {
-        if let index = (sender as? NSControl)?.tag {
-            let bundle = availableBundles[index]
+        if let index = (sender as? NSControl)?.tag, let bundle = availableBundles?[index] {
             downloadsInProgress.insert(bundle)
             tableView.reloadData()
             

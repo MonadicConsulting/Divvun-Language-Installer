@@ -28,5 +28,7 @@
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>JSONFileURL</key>
+	<string>https://www.dropbox.com/s/min9015tba4o167/bundles.json?dl=1</string>
 </dict>
 </plist>
