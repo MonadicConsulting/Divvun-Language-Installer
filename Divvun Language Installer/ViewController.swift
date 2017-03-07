@@ -9,7 +9,7 @@
 import Cocoa
 import Decodable
 
-let vendor = "MacDivvun"
+let vendor = Bundle.main.infoDictionary?["Vendor"] as? String ?? "MacDivvun"
 let spellerFolder = URL(fileURLWithPath: "\(NSHomeDirectory())/Library/Speller/\(vendor)", isDirectory: true)
 
 struct LanguageBundle: Decodable, Equatable, Hashable {
